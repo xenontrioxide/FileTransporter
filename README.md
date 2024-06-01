@@ -26,5 +26,5 @@ A success message should be printed in a message box.
 2. Build the Project. "Ctrl + B" for default Visual Studio
 3. Output is located at `ProjectDir/{Architecture}/{Configuration}/FileTransporter.dll` Example: `C:/FileTransporter/x64/Debug/FileTransporter.dll`
 
-#Image(s)
+# Image(s)
 ![alt text](https://github.com/xenontrioxide/FileTransporter/blob/master/images/SampleImage.png)
