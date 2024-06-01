@@ -108,5 +108,6 @@ void MoveFiles(const std::vector<std::wstring>& SelectedElements, const std::fil
             Desination = Dest / Filepath.filename();
         }
         std::filesystem::copy(Filepath, Desination, std::filesystem::copy_options::overwrite_existing | std::filesystem::copy_options::recursive);
+        std::filesystem::remove_all(Filepath);
     }
 }
