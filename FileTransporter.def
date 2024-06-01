@@ -1,0 +1,7 @@
+LIBRARY "FileTransporter"
+
+EXPORTS
+    DllGetClassObject
+    DllCanUnloadNow
+    DllRegisterServer
+    DllUnregisterServer
