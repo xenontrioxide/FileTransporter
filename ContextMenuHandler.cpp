@@ -135,7 +135,7 @@ void ContextMenuHandler::CreateMenus()
     if (SelectedElement.has_parent_path())
     {
         const auto SelectedElementParentPath = SelectedElement.parent_path();
-        if (SelectedElementParentPath.parent_path() != SelectedElement.root_path()) //This is super weird check but std::filesystem::path("C:\").parent_path() == "C:\" && std::filesystem::path("C:\").has_parent_path() == true which is not the behavior we want.
+        if (SelectedElementParentPath != SelectedElement.root_path()) //This is super weird check but std::filesystem::path("C:\").parent_path() == "C:\" && std::filesystem::path("C:\").has_parent_path() == true which is not the behavior we want.
         {
             ParentFolder = std::make_shared<SubMenu>(L"..", MoveMenu, std::vector<std::shared_ptr<SubMenu>>{}, reinterpret_cast<std::uintptr_t>(MoveFiles));
             MoveMenu->Children.push_back(ParentFolder);
