@@ -27,4 +27,4 @@ A success message should be printed in a message box.
 3. Output is located at `ProjectDir/{Architecture}/{Configuration}/FileTransporter.dll` Example: `C:/FileTransporter/x64/Debug/FileTransporter.dll`
 
 # Image(s)
-![alt text](https://github.com/xenontrioxide/FileTransporter/blob/master/images/SampleImage.png)
+![alt text](https://github.com/xenontrioxide/FileTransporter/blob/master/images/explorer_ldWLs31FaP.png)
