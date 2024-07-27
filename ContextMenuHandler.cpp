@@ -18,36 +18,6 @@ ContextMenuHandler::ContextMenuHandler()
     : RefCount(1)
 {
     _InterlockedIncrement(&Shared::DllReferenceCount);
-    
-    MainMenu = std::make_shared<SubMenu>(L"FileTransporter", nullptr, std::vector<std::shared_ptr<SubMenu>>{}, 0x0);
-    BackupMenu = std::make_shared<SubMenu>(L"Backup", MainMenu, std::vector<std::shared_ptr<SubMenu>>{}, reinterpret_cast<std::uintptr_t>(BackupFiles));
-    MoveMenu = std::make_shared<SubMenu>(L"Move To", MainMenu, std::vector<std::shared_ptr<SubMenu>>{}, 0x0);
-    MainMenu->Children.push_back(BackupMenu);
-    MainMenu->Children.push_back(MoveMenu);
-
-    ParentFolder = std::make_shared<SubMenu>(L"..", MoveMenu, std::vector<std::shared_ptr<SubMenu>>{}, reinterpret_cast<std::uintptr_t>(MoveFiles));
-    MoveMenu->Children.push_back(ParentFolder);
-
-
-    //If the config folder doesn't exist, create the folder and the json inside of it with empty data.
-    const auto ConfigSaveFolder = std::filesystem::path(Shared::JsonFilePath).parent_path();
-    if (!std::filesystem::exists(ConfigSaveFolder)) 
-    {
-        std::filesystem::create_directory(ConfigSaveFolder);
-        nlohmann::json Json;
-        Json["PinnedFolders"] = std::vector<std::string>();
-        SaveToDisk(Shared::JsonFilePath, Json);
-    }
-
-    const auto Json = LoadFromDisk(Shared::JsonFilePath);
-    std::vector<std::string> PinnedFolders = Json["PinnedFolders"].get<std::vector<std::string>>();
-    for (const auto& Pin : PinnedFolders)
-    {
-        MoveMenu->Children.push_back(std::make_shared<SubMenu>(std::filesystem::path(Pin).generic_wstring(), MoveMenu, std::vector<std::shared_ptr<SubMenu>>{}, reinterpret_cast<std::uintptr_t>(MoveFiles)));
-    }
-
-    ChooseMenu = std::make_shared<SubMenu>(L"Choose...", MoveMenu, std::vector<std::shared_ptr<SubMenu>>{}, reinterpret_cast<std::uintptr_t>(ChooseDirectory), true);
-    MoveMenu->Children.push_back(ChooseMenu);
 }
 
 ContextMenuHandler::~ContextMenuHandler()
@@ -130,7 +100,6 @@ IFACEMETHODIMP ContextMenuHandler::Initialize(LPCITEMIDLIST pidlFolder, LPDATAOB
         return E_FAIL;
     }
 
-
     uint32_t NumberFiles = DragQueryFileW(HandleDrop, 0xFFFFFFFF, NULL, 0);
     if (NumberFiles < 1)
         return E_FAIL;
@@ -148,14 +117,59 @@ IFACEMETHODIMP ContextMenuHandler::Initialize(LPCITEMIDLIST pidlFolder, LPDATAOB
     GlobalUnlock(Stm.hGlobal);
     ReleaseStgMedium(&Stm);
 
-    if (NumberFiles == 1) // If we have just one item selected
+    CreateMenus();
+
+    return S_OK;
+}
+
+void ContextMenuHandler::CreateMenus()
+{
+    MainMenu = std::make_shared<SubMenu>(L"FileTransporter", nullptr, std::vector<std::shared_ptr<SubMenu>>{}, 0x0);
+    BackupMenu = std::make_shared<SubMenu>(L"Backup", MainMenu, std::vector<std::shared_ptr<SubMenu>>{}, reinterpret_cast<std::uintptr_t>(BackupFiles));
+    MoveMenu = std::make_shared<SubMenu>(L"Move To", MainMenu, std::vector<std::shared_ptr<SubMenu>>{}, 0x0);
+    MainMenu->Children.push_back(BackupMenu);
+    MainMenu->Children.push_back(MoveMenu);
+
+    // .. operation should only exist if there is a parent path to move to
+    const auto SelectedElement = std::filesystem::path(SelectedElements[0]);
+    if (SelectedElement.has_parent_path())
+    {
+        const auto SelectedElementParentPath = SelectedElement.parent_path();
+        if (SelectedElementParentPath.parent_path() != SelectedElement.root_path()) //This is super weird check but std::filesystem::path("C:\").parent_path() == "C:\" && std::filesystem::path("C:\").has_parent_path() == true which is not the behavior we want.
+        {
+            ParentFolder = std::make_shared<SubMenu>(L"..", MoveMenu, std::vector<std::shared_ptr<SubMenu>>{}, reinterpret_cast<std::uintptr_t>(MoveFiles));
+            MoveMenu->Children.push_back(ParentFolder);
+        }
+    }
+
+    //If the config folder doesn't exist, create the folder and the json inside of it with empty data.
+    const auto ConfigSaveFolder = std::filesystem::path(Shared::JsonFilePath).parent_path();
+    if (!std::filesystem::exists(ConfigSaveFolder))
+    {
+        std::filesystem::create_directory(ConfigSaveFolder);
+        nlohmann::json Json;
+        Json["PinnedFolders"] = std::vector<std::string>();
+        SaveToDisk(Shared::JsonFilePath, Json);
+    }
+
+    const auto Json = LoadFromDisk(Shared::JsonFilePath);
+    std::vector<std::string> PinnedFolders = Json["PinnedFolders"].get<std::vector<std::string>>();
+    for (const auto& Pin : PinnedFolders)
+    {
+        MoveMenu->Children.push_back(std::make_shared<SubMenu>(std::filesystem::path(Pin).generic_wstring(), MoveMenu, std::vector<std::shared_ptr<SubMenu>>{}, reinterpret_cast<std::uintptr_t>(MoveFiles)));
+    }
+
+    ChooseMenu = std::make_shared<SubMenu>(L"Choose...", MoveMenu, std::vector<std::shared_ptr<SubMenu>>{}, reinterpret_cast<std::uintptr_t>(ChooseDirectory), true);
+    MoveMenu->Children.push_back(ChooseMenu);
+
+    if (SelectedElements.size() == 1) // If we have just one item selected
     {
         const auto Json = LoadFromDisk(Shared::JsonFilePath);
         std::vector<std::string> PinnedFolders = Json["PinnedFolders"].get<std::vector<std::string>>();
 
         //We only want folders for the pinning / unpinning
         const auto& Path = SelectedElements[0];
-        if (std::filesystem::is_directory(Path) && Contains(PinnedFolders, Path)) 
+        if (std::filesystem::is_directory(Path) && Contains(PinnedFolders, Path))
         {
             MainMenu->Children.push_back(std::make_shared<SubMenu>(L"Unpin", MainMenu, std::vector<std::shared_ptr<SubMenu>>{}, reinterpret_cast<std::uintptr_t>(UnpinFolder)));
         }
@@ -176,8 +190,6 @@ IFACEMETHODIMP ContextMenuHandler::Initialize(LPCITEMIDLIST pidlFolder, LPDATAOB
             }
         }
     }
-
-    return S_OK;
 }
 
 void InsertSubMenu(HMENU hMenu, std::shared_ptr<SubMenu> menu, UINT& uID, UINT idCmdFirst, std::vector<std::shared_ptr<SubMenu>>& RegisteredHandlers, bool isMainMenu = false, UINT indexMenu = 0)
