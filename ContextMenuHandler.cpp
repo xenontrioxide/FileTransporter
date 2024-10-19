@@ -9,6 +9,7 @@
 #include "shared.hpp"
 #include "ContextMenuHandler.hpp"
 #include "nlohmann/json.hpp"
+#include <atlbase.h>
 
 #pragma comment(lib, "shlwapi.lib")
 
@@ -44,11 +45,10 @@ IFACEMETHODIMP_(ULONG) ContextMenuHandler::AddRef()
 IFACEMETHODIMP_(ULONG) ContextMenuHandler::Release()
 {
     ULONG Refs = _InterlockedDecrement(&RefCount);
-    if (!Refs)
-    {
+    if (!Refs && this) //I could not figure out why deleting this was invalid on release && this fixed it.
+    {                  //It also only happened when I included ATL::ComPtr<IShellItemArray> and filled it.
         delete this;
     }
-
     return Refs;
 }
 
@@ -80,6 +80,15 @@ IFACEMETHODIMP ContextMenuHandler::Initialize(LPCITEMIDLIST pidlFolder, LPDATAOB
     {
         return E_INVALIDARG;
     }
+
+    
+    //const auto CreationResult = SHCreateShellItemArrayFromDataObject(pDataObj, IID_PPV_ARGS(&SelectedShellItems));
+    //if (!SUCCEEDED(CreationResult))
+    //{
+    //    return E_FAIL;
+    //}
+
+    
 
     FORMATETC fe = { CF_HDROP, NULL, DVASPECT_CONTENT, -1, TYMED_HGLOBAL };
     STGMEDIUM Stm;
@@ -114,10 +123,12 @@ IFACEMETHODIMP ContextMenuHandler::Initialize(LPCITEMIDLIST pidlFolder, LPDATAOB
         }
     }
 
+    CreateMenus();
+
     GlobalUnlock(Stm.hGlobal);
     ReleaseStgMedium(&Stm);
 
-    CreateMenus();
+
 
     return S_OK;
 }
@@ -202,6 +213,7 @@ void InsertSubMenu(HMENU hMenu, std::shared_ptr<SubMenu> menu, UINT& uID, UINT i
         InsertSubMenu(hSubMenu, menu->Children[i], uID, idCmdFirst, RegisteredHandlers);
     }
 
+
     // Insert this menu
     MENUITEMINFO mii = { sizeof(MENUITEMINFO) };
     mii.fMask = menu->Children.size() ? MIIM_SUBMENU | MIIM_STRING | MIIM_ID : MIIM_STRING | MIIM_ID;
@@ -241,8 +253,28 @@ IFACEMETHODIMP ContextMenuHandler::QueryContextMenu(HMENU hMenu, UINT indexMenu,
 {
     if (CMF_DEFAULTONLY & uFlags)
     {
-        return MAKE_HRESULT(SEVERITY_SUCCESS, 0, USHORT(0));
+        return E_FAIL;
     }
+
+    //DWORD ItemCount{};
+    //const auto CountResult = SelectedShellItems->GetCount(&ItemCount);
+    //if (!SUCCEEDED(CountResult))
+    //    return E_FAIL;
+    //
+    //for (int i = 0u; i < ItemCount; i++)
+    //{
+    //    CComPtr<IShellItem> Item;
+    //    SelectedShellItems->GetItemAt(i, &Item);
+    //
+    //    
+    //    WCHAR* StringData = (WCHAR*)CoTaskMemAlloc(MAX_PATH * sizeof(WCHAR));
+    //    Item->GetDisplayName(SIGDN_DESKTOPABSOLUTEPARSING, &StringData);
+    //
+    //    MessageBoxW(nullptr, StringData, StringData, MB_OK);
+    //
+    //    CoTaskMemFree(StringData);
+    //}
+
     UINT uID = idCmdFirst;
     InsertSubMenu(hMenu, MainMenu, uID, idCmdFirst, RegisteredHandlers, true, indexMenu);
     return MAKE_HRESULT(SEVERITY_SUCCESS, FACILITY_NULL, uID - idCmdFirst);
@@ -250,6 +282,11 @@ IFACEMETHODIMP ContextMenuHandler::QueryContextMenu(HMENU hMenu, UINT indexMenu,
 
 IFACEMETHODIMP ContextMenuHandler::InvokeCommand(LPCMINVOKECOMMANDINFO pici)
 {
+    if (!pici)
+    {
+        return E_INVALIDARG;
+    }
+
     const auto Word = LOWORD(pici->lpVerb);
     return Handler(Word, SelectedElements, RegisteredHandlers);
 }

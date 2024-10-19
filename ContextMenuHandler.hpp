@@ -8,6 +8,9 @@
 #include <filesystem>
 
 #include "FileOperations.hpp"
+
+#include <atlbase.h>
+
 struct SubMenu
 {
     std::wstring Title;
@@ -27,6 +30,70 @@ struct SubMenu
     {
     }
 };
+
+
+struct MenuItemBase
+{
+    std::wstring Verb; //Microsoft's terminology for the "name" of the MenuItem.
+
+    virtual bool HasAction() = 0;
+    virtual bool ExecuteAction() = 0;
+
+    MenuItemBase(const std::wstring_view _Verb) : Verb(_Verb) {}
+};
+
+struct MenuItem : public MenuItemBase
+{
+    std::function<bool()> Action;
+
+    virtual bool HasAction() { return true; }
+    virtual bool ExecuteAction() { return Action(); };
+
+    MenuItem(const std::wstring_view _Verb, const std::function<bool()>& _Action) : MenuItemBase(_Verb), Action(_Action) {}
+};
+
+struct SubMenuItem : public MenuItemBase
+{
+    std::vector<MenuItemBase> Children; //Does this really need to know it's own children? In the ExampleClicked it doesn't really matter who owns it.
+                                        //That would mean that MenuMap can own all the MenuBases. It would also mean I could use a factory, where the data then gets moved into MenuMap
+
+    virtual bool HasAction() { return false; }
+    virtual bool ExecuteAction() { /* NOP */ };
+
+    SubMenuItem(const std::wstring_view _Verb) : MenuItemBase(_Verb) {}
+};
+
+struct SeperatorMenuItem : public MenuItemBase
+{
+    virtual bool HasAction() { return false; }
+    virtual bool ExecuteAction() { /* NOP */ };
+
+    SeperatorMenuItem(const std::wstring_view _Verb) : MenuItemBase(_Verb) {} //Not sure this needs a Verb.
+};
+
+inline std::unordered_map<uint32_t, std::unique_ptr<MenuItemBase>> MenuMap {};
+
+inline void ExampleClicked(uint32_t input)
+{
+    if (MenuMap.at(input)->HasAction())
+    {
+        const auto Result = MenuMap.at(input)->ExecuteAction();
+    }
+}
+
+template <typename T, typename... Args>
+inline std::unique_ptr<MenuItemBase> MenuFactory(Args&&... args)
+{
+    return std::make_unique<T>(args...);
+}
+
+inline bool TestFunction() { return false; }
+
+inline void Create()
+{
+    MenuMap[0x0] = MenuFactory<MenuItem>(L"Test Compile", TestFunction);
+}
+
 
 class ContextMenuHandler : public IShellExtInit, public IContextMenu
 {
@@ -64,6 +131,8 @@ private:
     std::shared_ptr<SubMenu> MoveMenu{};
     std::shared_ptr<SubMenu> ParentFolder{};
     std::shared_ptr<SubMenu> ChooseMenu{};
+
+    //ATL::CComPtr<IShellItemArray> SelectedShellItems{};
 };
 
 inline void ChooseDirectory(const std::vector<std::wstring>& SelectedElements, const std::filesystem::path& dest)
