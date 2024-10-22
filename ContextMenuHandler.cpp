@@ -203,14 +203,14 @@ void ContextMenuHandler::CreateMenus()
     }
 }
 
-void InsertSubMenu(HMENU hMenu, std::shared_ptr<SubMenu> menu, UINT& uID, UINT idCmdFirst, std::vector<std::shared_ptr<SubMenu>>& RegisteredHandlers, bool isMainMenu = false, UINT indexMenu = 0)
+void InsertSubMenu(HMENU hMenu, std::shared_ptr<SubMenu> menu, UINT& uID, UINT idCmdFirst, std::vector<std::shared_ptr<SubMenu>>& RegisteredHandlers, bool isMainMenu, UINT& indexMenu)
 {
     HMENU hSubMenu = menu->Children.size() ? CreatePopupMenu() : nullptr;
 
     // Insert child menus first
     for (size_t i = 0; i < menu->Children.size(); i++)
     {
-        InsertSubMenu(hSubMenu, menu->Children[i], uID, idCmdFirst, RegisteredHandlers);
+        InsertSubMenu(hSubMenu, menu->Children[i], uID, idCmdFirst, RegisteredHandlers, false, indexMenu);
     }
 
 
@@ -230,11 +230,17 @@ void InsertSubMenu(HMENU hMenu, std::shared_ptr<SubMenu> menu, UINT& uID, UINT i
 
     if (isMainMenu)
     {
-        InsertMenuItemW(hMenu, indexMenu, true, &mii);
+        if (!InsertMenuItemW(hMenu, indexMenu++, true, &mii))
+        {
+            MessageBoxA(nullptr, std::to_string(GetLastError()).c_str(), std::to_string(GetLastError()).c_str(), MB_OK);
+        }
     }
     else
     {
-        InsertMenuItemW(hMenu, -1, true, &mii); //-1 always inserts at the end
+        if (!InsertMenuItemW(hMenu, indexMenu++, true, &mii)) //-1 always inserts at the end
+        {
+            MessageBoxA(nullptr, std::to_string(GetLastError()).c_str(), std::to_string(GetLastError()).c_str(), MB_OK);
+        }
     }
 
     if (menu->TrailingSeperator)
@@ -244,10 +250,11 @@ void InsertSubMenu(HMENU hMenu, std::shared_ptr<SubMenu> menu, UINT& uID, UINT i
         sep.fType = MFT_SEPARATOR;
         if (!InsertMenuItem(hMenu, uID + 1, TRUE, &sep))
         {
-            
         }
     }
 }
+
+wchar_t test[] = L"TestVerb";
 
 IFACEMETHODIMP ContextMenuHandler::QueryContextMenu(HMENU hMenu, UINT indexMenu, UINT idCmdFirst, UINT idCmdLast, UINT uFlags)
 {
@@ -277,7 +284,9 @@ IFACEMETHODIMP ContextMenuHandler::QueryContextMenu(HMENU hMenu, UINT indexMenu,
 
     UINT uID = idCmdFirst;
     InsertSubMenu(hMenu, MainMenu, uID, idCmdFirst, RegisteredHandlers, true, indexMenu);
-    return MAKE_HRESULT(SEVERITY_SUCCESS, FACILITY_NULL, uID - idCmdFirst);
+    const auto Offset = uID - idCmdFirst + 1;
+    MessageBoxW(nullptr, std::to_wstring(Offset).c_str(), std::to_wstring(Offset).c_str(), MB_OK);
+    return MAKE_HRESULT(SEVERITY_SUCCESS, FACILITY_NULL, Offset);
 }
 
 IFACEMETHODIMP ContextMenuHandler::InvokeCommand(LPCMINVOKECOMMANDINFO pici)

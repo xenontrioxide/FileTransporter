@@ -47,7 +47,10 @@ STDAPI DllRegisterServer()
     if (!SUCCEEDED(ServerRegisterStatus))
         return ServerRegisterStatus;
 
-    const auto ServerContextRegisterStatus = RegisterShellExtContextMenuHandler(L"*", Shared::ClsidContextMenuHandler, Shared::FriendlyClassName);
+    auto ServerContextRegisterStatus = RegisterShellExtContextMenuHandler(L"*", Shared::ClsidContextMenuHandler, Shared::FriendlyClassName);
+    ServerContextRegisterStatus = RegisterShellExtContextMenuHandler(L"Folder", Shared::ClsidContextMenuHandler, Shared::FriendlyClassName);
+    ServerContextRegisterStatus = RegisterShellExtContextMenuHandler(L"AllFileSystemObjects", Shared::ClsidContextMenuHandler, Shared::FriendlyClassName);
+    ServerContextRegisterStatus = RegisterShellExtContextMenuHandler(L"Directory", Shared::ClsidContextMenuHandler, Shared::FriendlyClassName);
     return ServerContextRegisterStatus;
 }
 
@@ -59,7 +62,10 @@ STDAPI DllUnregisterServer()
         return ServerUnregisterStatus;
     }
 
-    const auto ServerContextUnregisterStatus = UnregisterShellExtContextMenuHandler(L"*", Shared::ClsidContextMenuHandler);
+    auto ServerContextUnregisterStatus = UnregisterShellExtContextMenuHandler(L"*", Shared::ClsidContextMenuHandler);
+    ServerContextUnregisterStatus = UnregisterShellExtContextMenuHandler(L"Folder", Shared::ClsidContextMenuHandler);
+    ServerContextUnregisterStatus = UnregisterShellExtContextMenuHandler(L"AllFileSystemObjects", Shared::ClsidContextMenuHandler);
+    ServerContextUnregisterStatus = UnregisterShellExtContextMenuHandler(L"Directory", Shared::ClsidContextMenuHandler);
     return ServerContextUnregisterStatus;
 }
 
