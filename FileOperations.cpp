@@ -3,111 +3,78 @@
 #include <ostream>
 #include <fstream>
 
-nlohmann::json LoadFromDisk(const std::filesystem::path& path)
+namespace FileTransporter
 {
-    if (!std::filesystem::exists(path.parent_path()))
+    namespace FileOperations
     {
-        if (!std::filesystem::create_directory(path.parent_path()))
+        nlohmann::json LoadJsonFromDisk(const std::filesystem::path& path)
         {
-            //TODO: Add good logging
-            return {};
-        }
-    }
-
-    std::ifstream file(path);
-    if (file.fail() || !file.is_open() || file.peek() == std::ifstream::traits_type::eof())
-    {
-        //TODO: Add good logging
-        return {};
-    }
-
-    nlohmann::json json = nlohmann::json::parse(file, nullptr, false);
-    if (json.is_discarded())
-    {
-        //TODO: Add good logging
-        return {};
-    }
-
-    return json;
-}
-
-bool SaveToDisk(const std::filesystem::path& path, const nlohmann::json& json)
-{
-    if (!std::filesystem::exists(path.parent_path()))
-    {
-        if (!std::filesystem::create_directory(path.parent_path()))
-        {
-            //TODO: Add good logging
-            return false;
-        }
-    }
-
-    std::ofstream file(path);
-    if (file.fail() || !file.is_open())
-    {
-        //TODO: Add good logging
-        return false;
-    }
-
-    file << std::setw(4) << json << std::endl;
-    return true;
-}
-
-std::filesystem::path GetDestinationParent(const std::filesystem::path& path1, const std::filesystem::path& path2)
-{
-    //outer\inner\inner ..
-    //TODO: Check parent paths;
-    if (path2.generic_string() == "..")
-        return path1.parent_path().parent_path();
-
-    //outer\inner\file.txt
-    //outer\inner\folder
-
-    return path1.parent_path();
-}
-
-void BackupFiles(const std::vector<std::wstring>& SelectedElements, const std::filesystem::path& Dest)
-{
-    const auto GetBackUpFileName = [&](const std::filesystem::path& Source)
-        {
-            if (std::filesystem::is_directory(Source))
+            if (!std::filesystem::exists(path.parent_path()))
             {
-                return std::format("{}(backup)", Source.filename().generic_string());
+                if (!std::filesystem::create_directory(path.parent_path()))
+                {
+                    //TODO: Add good logging
+                    return {};
+                }
             }
-            else if (std::filesystem::is_regular_file(Source))
+
+            std::ifstream file(path);
+            if (file.fail() || !file.is_open() || file.peek() == std::ifstream::traits_type::eof())
             {
-                return std::format("{}.bak", Source.filename().generic_string());
+                //TODO: Add good logging
+                return {};
             }
-            else
+
+            nlohmann::json json = nlohmann::json::parse(file, nullptr, false);
+            if (json.is_discarded())
             {
-                return std::string("");
+                //TODO: Add good logging
+                return {};
             }
-        };
 
-    for (const auto& File : SelectedElements)
-    {
-        std::filesystem::path Filepath(File);
-        const auto BackupFileName = GetBackUpFileName(Filepath);
-        if (BackupFileName.empty())
-            return;
-
-        const auto Destination = Dest / BackupFileName;
-
-        std::filesystem::copy(Filepath, Destination, std::filesystem::copy_options::overwrite_existing | std::filesystem::copy_options::recursive);
-    }
-}
-
-void MoveFiles(const std::vector<std::wstring>& SelectedElements, const std::filesystem::path& Dest)
-{
-    for (const auto& File : SelectedElements)
-    {
-        auto Desination = Dest;
-        std::filesystem::path Filepath(File);
-        if (std::filesystem::is_directory(Filepath))
-        {
-            Desination = Dest / Filepath.filename();
+            return json;
         }
-        std::filesystem::copy(Filepath, Desination, std::filesystem::copy_options::overwrite_existing | std::filesystem::copy_options::recursive);
-        std::filesystem::remove_all(Filepath);
+
+        bool SaveJsonToDisk(const std::filesystem::path& path, const nlohmann::json& json)
+        {
+            if (!std::filesystem::exists(path.parent_path()))
+            {
+                if (!std::filesystem::create_directory(path.parent_path()))
+                {
+                    //TODO: Add good logging
+                    return false;
+                }
+            }
+
+            std::ofstream file(path);
+            if (file.fail() || !file.is_open())
+            {
+                //TODO: Add good logging
+                return false;
+            }
+
+            file << std::setw(4) << json << std::endl;
+            return true;
+        }
+
+        void SavePinnedFolderToJson(const std::filesystem::path& SelectedElement, const std::filesystem::path& JsonFile)
+        {
+            auto Json = LoadJsonFromDisk(JsonFile);
+            std::vector<std::string> PinnedFolders = Json["PinnedFolders"].get<std::vector<std::string>>();
+            PinnedFolders.push_back(SelectedElement.generic_string());
+            Json["PinnedFolders"] = PinnedFolders;
+            SaveJsonToDisk(JsonFile, Json);
+        }
+
+        void RemovePinnedFolderFromJson(const std::filesystem::path& SelectedElement, const std::filesystem::path& JsonFile)
+        {
+            auto Json = LoadJsonFromDisk(JsonFile);
+            std::vector<std::string> PinnedFolders = Json["PinnedFolders"].get<std::vector<std::string>>();
+            PinnedFolders.push_back(SelectedElement.generic_string());
+            auto ToRemove = std::remove_if(PinnedFolders.begin(), PinnedFolders.end(), [&](const std::string& Entry) { return std::filesystem::path(Entry) == std::filesystem::path(SelectedElement); });
+            PinnedFolders.erase(ToRemove, PinnedFolders.end());
+            Json["PinnedFolders"] = PinnedFolders;
+            SaveJsonToDisk(JsonFile, Json);
+        }
     }
 }
