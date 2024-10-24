@@ -147,18 +147,24 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="Actions.hpp" />
     <ClInclude Include="ClassFactory.hpp" />
+    <ClInclude Include="ComUtils.hpp" />
     <ClInclude Include="ContextMenuHandler.hpp" />
     <ClInclude Include="FileOperations.hpp" />
+    <ClInclude Include="MenuItem.hpp" />
     <ClInclude Include="nlohmann\json.hpp" />
     <ClInclude Include="Reg.hpp" />
     <ClInclude Include="Shared.hpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Actions.cpp" />
     <ClCompile Include="ClassFactory.cpp" />
+    <ClCompile Include="ComUtils.cpp" />
     <ClCompile Include="ContextMenuHandler.cpp" />
     <ClCompile Include="DllMain.cpp" />
     <ClCompile Include="FileOperations.cpp" />
+    <ClCompile Include="MenuItem.cpp" />
     <ClCompile Include="Reg.cpp" />
   </ItemGroup>
   <ItemGroup>

@@ -18,6 +18,9 @@
     <ClInclude Include="nlohmann\json.hpp">
       <Filter>nlohmann</Filter>
     </ClInclude>
+    <ClInclude Include="Actions.hpp" />
+    <ClInclude Include="MenuItem.hpp" />
+    <ClInclude Include="ComUtils.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="DllMain.cpp" />
@@ -25,6 +28,9 @@
     <ClCompile Include="ClassFactory.cpp" />
     <ClCompile Include="Reg.cpp" />
     <ClCompile Include="FileOperations.cpp" />
+    <ClCompile Include="Actions.cpp" />
+    <ClCompile Include="MenuItem.cpp" />
+    <ClCompile Include="ComUtils.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="FileTransporter.def" />
