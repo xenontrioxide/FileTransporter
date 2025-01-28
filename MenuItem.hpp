@@ -10,11 +10,12 @@ namespace FileTransporter
 {
     struct MenuItemBase
     {
-        virtual std::wstring GetMenuItemText() = 0;
-        virtual std::vector<std::shared_ptr<MenuItemBase>> GetChildren() = 0;
-        virtual uint32_t GetMask() = 0;
-        virtual uint32_t GetType() = 0;
-        virtual bool ExecuteAction(const ATL::CComPtr<IShellItemArray>&, const std::shared_ptr<MenuItemBase>&) = 0;
+        [[nodiscard]] virtual std::wstring GetMenuItemText() const = 0;
+        [[nodiscard]] virtual std::vector<std::shared_ptr<MenuItemBase>> GetChildren() const = 0;
+        [[nodiscard]] virtual uint32_t GetMask() const = 0;
+        [[nodiscard]] virtual uint32_t GetType() const = 0;
+        [[nodiscard]] virtual bool ExecuteAction(const ATL::CComPtr<IShellItemArray>&, const std::shared_ptr<MenuItemBase>&) = 0;
+        virtual ~MenuItemBase() {};
     };
 
     struct MenuItem : MenuItemBase
@@ -24,13 +25,13 @@ namespace FileTransporter
         std::wstring MenuItemText{ };
         ActionType Action{ };
 
-        MenuItem(const std::wstring& MenuItemText, ActionType Action = [](const ATL::CComPtr<IShellItemArray>&, const std::shared_ptr<FileTransporter::MenuItemBase>&) { return false; });
-
-        virtual std::wstring GetMenuItemText() override;
-        virtual std::vector<std::shared_ptr<MenuItemBase>> GetChildren() override;
-        virtual uint32_t GetMask() override;
-        virtual uint32_t GetType() override;
-        virtual bool ExecuteAction(const ATL::CComPtr<IShellItemArray>& SelectedElements, const std::shared_ptr<MenuItemBase>& CurrentItem) override;
+        [[nodiscard]] MenuItem(const std::wstring& MenuItemText, ActionType Action = [](const ATL::CComPtr<IShellItemArray>&, const std::shared_ptr<FileTransporter::MenuItemBase>&) { return false; });
+        [[nodiscard]] virtual std::wstring GetMenuItemText() const override;
+        [[nodiscard]] virtual std::vector<std::shared_ptr<MenuItemBase>> GetChildren() const override;
+        [[nodiscard]] virtual uint32_t GetMask() const override;
+        [[nodiscard]] virtual uint32_t GetType() const override;
+        [[nodiscard]] virtual bool ExecuteAction(const ATL::CComPtr<IShellItemArray>& SelectedElements, const std::shared_ptr<MenuItemBase>& CurrentItem) override;
+        virtual ~MenuItem();
     };
 
     struct SubMenuItem : MenuItemBase
@@ -38,25 +39,24 @@ namespace FileTransporter
         std::wstring MenuItemText{ };
         std::vector<std::shared_ptr<MenuItemBase>> Children{ };
 
-        SubMenuItem(const std::wstring& MenuItemText);
-
+        [[nodiscard]] SubMenuItem(const std::wstring& MenuItemText);
         void AddChild(const std::shared_ptr<MenuItemBase>& Child);
-
-        std::wstring GetMenuItemText() override;
-        virtual std::vector<std::shared_ptr<MenuItemBase>> GetChildren() override;
-        virtual uint32_t GetMask() override;
-        virtual uint32_t GetType() override;
-        virtual bool ExecuteAction(const ATL::CComPtr<IShellItemArray>& SelectedElements, const std::shared_ptr<MenuItemBase>& CurrentItem) override;
+        [[nodiscard]] std::wstring GetMenuItemText() const override;
+        [[nodiscard]] virtual std::vector<std::shared_ptr<MenuItemBase>> GetChildren() const override;
+        [[nodiscard]] virtual uint32_t GetMask() const override;
+        [[nodiscard]] virtual uint32_t GetType() const override;
+        [[nodiscard]] virtual bool ExecuteAction(const ATL::CComPtr<IShellItemArray>& SelectedElements, const std::shared_ptr<MenuItemBase>& CurrentItem) override;
+        virtual ~SubMenuItem();
     };
 
     struct SeparatorMenuItem : MenuItemBase
     {
-        SeparatorMenuItem();
-
-        virtual std::wstring GetMenuItemText() override;
-        virtual std::vector<std::shared_ptr<MenuItemBase>> GetChildren() override;
-        virtual uint32_t GetMask() override;
-        virtual uint32_t GetType() override;
-        virtual bool ExecuteAction(const ATL::CComPtr<IShellItemArray>& SelectedElements, const std::shared_ptr<MenuItemBase>& CurrentItem) override;
+        [[nodiscard]] SeparatorMenuItem();
+        [[nodiscard]] virtual std::wstring GetMenuItemText() const override;
+        [[nodiscard]] virtual std::vector<std::shared_ptr<MenuItemBase>> GetChildren() const override;
+        [[nodiscard]] virtual uint32_t GetMask() const override;
+        [[nodiscard]] virtual uint32_t GetType() const override;
+        [[nodiscard]] virtual bool ExecuteAction(const ATL::CComPtr<IShellItemArray>& SelectedElements, const std::shared_ptr<MenuItemBase>& CurrentItem) override;
+        virtual ~SeparatorMenuItem();
     };
 }

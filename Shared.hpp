@@ -16,7 +16,7 @@ namespace Shared
     inline constexpr auto ThreadingModel = L"Apartment";
     inline constexpr auto JsonFileName = "FileTransporter.json";
 
-    inline std::wstring GetModulename()
+    [[nodiscard]] inline std::wstring GetModulename()
     {
         wchar_t moduleName[MAX_PATH]{};
         if (GetModuleFileNameW(Shared::DllHandle, moduleName, MAX_PATH) == 0)
@@ -27,12 +27,17 @@ namespace Shared
         return moduleName;
     }
 
-    inline std::filesystem::path GetJsonFilePath()
+    [[nodiscard]] inline std::filesystem::path GetJsonFilePath()
     {
-        std::wstring AppdataFolderPath(32767, 0);
-        if (SUCCEEDED(SHGetFolderPathW(nullptr, CSIDL_COMMON_APPDATA, nullptr, 0, AppdataFolderPath.data())))
-            return std::filesystem::path(AppdataFolderPath) / "FileTransporter" / JsonFileName;
+        wchar_t* AppdataFolderPath = nullptr;
+        if (SUCCEEDED(SHGetKnownFolderPath(FOLDERID_LocalAppData, 0, nullptr, &AppdataFolderPath)))
+        {
+            const auto Result = std::filesystem::path(AppdataFolderPath) / "FileTransporter" / JsonFileName;
+            CoTaskMemFree(AppdataFolderPath);
+            return Result;
+        }
 
-        return std::filesystem::path("");
+        CoTaskMemFree(AppdataFolderPath);
+        return {};
     }
 }

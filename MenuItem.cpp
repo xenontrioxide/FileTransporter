@@ -9,29 +9,34 @@ namespace FileTransporter
 
     }
 
-    std::wstring MenuItem::GetMenuItemText()
+    [[nodiscard]] std::wstring MenuItem::GetMenuItemText() const
     {
         return MenuItemText;
     }
 
-    std::vector<std::shared_ptr<MenuItemBase>> MenuItem::GetChildren()
+    [[nodiscard]] std::vector<std::shared_ptr<MenuItemBase>> MenuItem::GetChildren() const
     {
         return { };
     }
 
-    uint32_t MenuItem::GetMask()
+    [[nodiscard]] uint32_t MenuItem::GetMask() const
     {
         return MIIM_STRING | MIIM_ID;
     }
 
-    uint32_t MenuItem::GetType()
+    [[nodiscard]] uint32_t MenuItem::GetType() const
     {
         return 0;
     }
 
-    bool MenuItem::ExecuteAction(const ATL::CComPtr<IShellItemArray>& SelectedElements, const std::shared_ptr<MenuItemBase>& CurrentItem)
+    [[nodiscard]] bool MenuItem::ExecuteAction(const ATL::CComPtr<IShellItemArray>& SelectedElements, const std::shared_ptr<MenuItemBase>& CurrentItem)
     {
         return Action(SelectedElements, CurrentItem);
+    }
+
+    MenuItem::~MenuItem()
+    {
+
     }
     //MenuItem
 
@@ -42,34 +47,39 @@ namespace FileTransporter
 
     }
 
-    void SubMenuItem::AddChild(const std::shared_ptr<MenuItemBase>& Child)
+    [[nodiscard]] void SubMenuItem::AddChild(const std::shared_ptr<MenuItemBase>& Child)
     {
         Children.push_back(Child);
     }
 
-    std::wstring SubMenuItem::GetMenuItemText()
+    [[nodiscard]] std::wstring SubMenuItem::GetMenuItemText() const
     {
         return MenuItemText;
     }
 
-    std::vector<std::shared_ptr<MenuItemBase>> SubMenuItem::GetChildren()
+    [[nodiscard]] std::vector<std::shared_ptr<MenuItemBase>> SubMenuItem::GetChildren() const
     {
         return Children;
     }
 
-    uint32_t SubMenuItem::GetMask()
+    [[nodiscard]] uint32_t SubMenuItem::GetMask() const
     {
         return MIIM_SUBMENU | MIIM_STRING | MIIM_ID;
     }
 
-    uint32_t SubMenuItem::GetType()
+    [[nodiscard]] uint32_t SubMenuItem::GetType() const
     {
         return 0;
     }
 
-    bool SubMenuItem::ExecuteAction(const ATL::CComPtr<IShellItemArray>& SelectedElements, const std::shared_ptr<MenuItemBase>& CurrentItem)
+    [[nodiscard]] bool SubMenuItem::ExecuteAction(const ATL::CComPtr<IShellItemArray>& SelectedElements, const std::shared_ptr<MenuItemBase>& CurrentItem)
     {
         return false;
+    }
+
+    SubMenuItem::~SubMenuItem()
+    {
+
     }
     //SubMenuItem
 
@@ -79,29 +89,34 @@ namespace FileTransporter
 
     }
 
-    std::wstring SeparatorMenuItem::GetMenuItemText()
+    [[nodiscard]] std::wstring SeparatorMenuItem::GetMenuItemText() const
     {
         return L"Null";
     }
 
-    std::vector<std::shared_ptr<MenuItemBase>> SeparatorMenuItem::GetChildren()
+    [[nodiscard]] std::vector<std::shared_ptr<MenuItemBase>> SeparatorMenuItem::GetChildren() const
     {
         return {};
     }
 
-    uint32_t SeparatorMenuItem::GetMask()
+    [[nodiscard]] uint32_t SeparatorMenuItem::GetMask() const
     {
         return MIIM_TYPE;
     }
 
-    uint32_t SeparatorMenuItem::GetType()
+    [[nodiscard]] uint32_t SeparatorMenuItem::GetType() const
     {
         return MFT_SEPARATOR;
     }
 
-    bool SeparatorMenuItem::ExecuteAction(const ATL::CComPtr<IShellItemArray>& SelectedElements, const std::shared_ptr<MenuItemBase>& CurrentItem)
+    [[nodiscard]] bool SeparatorMenuItem::ExecuteAction(const ATL::CComPtr<IShellItemArray>& SelectedElements, const std::shared_ptr<MenuItemBase>& CurrentItem)
     {
         return false;
+    }
+
+    SeparatorMenuItem::~SeparatorMenuItem()
+    {
+
     }
     //SeparatorMenuItem
 }

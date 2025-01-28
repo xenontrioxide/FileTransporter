@@ -165,24 +165,31 @@ void ContextMenuHandler::CreateMenus()
         std::filesystem::create_directory(ConfigSaveFolder);
         nlohmann::json Json;
         Json["PinnedFolders"] = std::vector<std::string>();
-        FileTransporter::FileOperations::SaveJsonToDisk(Shared::GetJsonFilePath(), Json);
+        const auto Saved = FileTransporter::FileOperations::SaveJsonToDisk(Shared::GetJsonFilePath(), Json);
+        if (!Saved)
+        {
+            //Todo: Add good logging.
+        }
     }
 
+    std::vector<std::string> PinnedFolders{};
+
     const auto Json = FileTransporter::FileOperations::LoadJsonFromDisk(Shared::GetJsonFilePath());
-    std::vector<std::string> PinnedFolders = Json["PinnedFolders"].get<std::vector<std::string>>();
-    for (const auto& Pin : PinnedFolders)
+    if (!Json.is_null())
     {
-        MoveTo->AddChild(std::make_shared<FileTransporter::MenuItem>(std::filesystem::path(Pin).generic_wstring(), FileTransporter::Actions::MoveToPinnedFolder));
+        PinnedFolders = Json.value("PinnedFolders", std::vector<std::string>{});
+        for (const auto& Pin : PinnedFolders)
+        {
+            MoveTo->AddChild(std::make_shared<FileTransporter::MenuItem>(std::filesystem::path(Pin).generic_wstring(), FileTransporter::Actions::MoveToPinnedFolder));
+        }
     }
+
 
     MoveTo->AddChild(std::make_shared<FileTransporter::MenuItem>(L"Choose...", FileTransporter::Actions::MoveToChoiceDirectory));
     MoveTo->AddChild(std::make_shared<FileTransporter::SeparatorMenuItem>());
 
     if (Count == 1) // If we have just one item selected
     {
-        const auto Json = FileTransporter::FileOperations::LoadJsonFromDisk(Shared::GetJsonFilePath());
-        std::vector<std::string> PinnedFolders = Json["PinnedFolders"].get<std::vector<std::string>>();
-
         //We only want folders for the pinning / unpinning
         const auto Path = FileTransporter::ComUtils::GetShellItemPath(FirstSelectedItem);
         if (std::filesystem::is_directory(Path) && Contains(PinnedFolders, Path))
@@ -269,8 +276,7 @@ IFACEMETHODIMP ContextMenuHandler::InvokeCommand(LPCMINVOKECOMMANDINFO pici)
     if (!ChosenMenuItem)
         return E_FAIL;
 
-    ChosenMenuItem->ExecuteAction(SelectedShellItems, ChosenMenuItem);
-    return S_OK;
+    return ChosenMenuItem->ExecuteAction(SelectedShellItems, ChosenMenuItem) ? S_OK : E_FAIL;
 }
 
 IFACEMETHODIMP ContextMenuHandler::GetCommandString(UINT_PTR idCommand, UINT uFlags, UINT* pwReserved, LPSTR pszName, UINT cchMax)

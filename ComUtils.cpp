@@ -6,7 +6,7 @@ namespace FileTransporter
 {
     namespace ComUtils
     {
-        std::filesystem::path GetShellItemPath(const CComPtr<IShellItem>& ShellItem)
+        [[nodiscard]] std::filesystem::path GetShellItemPath(const CComPtr<IShellItem>& ShellItem)
         {
             LPWSTR SelectedFilePath{};
             const auto GetDisplayNameResult = ShellItem->GetDisplayName(SIGDN_DESKTOPABSOLUTEPARSING, &SelectedFilePath);
@@ -21,7 +21,7 @@ namespace FileTransporter
             return SelectedPath;
         }
 
-        CComPtr<IShellItem> GetShellItemFromPath(const std::filesystem::path& Path)
+        [[nodiscard]] CComPtr<IShellItem> GetShellItemFromPath(const std::filesystem::path& Path)
         {
             CComPtr<IShellItem> ShellItem = nullptr;
             auto PathCopy = Path; //This is needed because make_preferred only works on non-const, converts path/a/b/c to path\\a\b\\c which this Windows function wants...
@@ -29,7 +29,7 @@ namespace FileTransporter
             return ShellItem;
         }
 
-        bool MoveToDirectory(const ATL::CComPtr<IShellItemArray>& SelectedElements, const CComPtr<IShellItem>& Directory)
+        [[nodiscard]] bool MoveToDirectory(const ATL::CComPtr<IShellItemArray>& SelectedElements, const CComPtr<IShellItem>& Directory)
         {
             CComPtr<IFileOperation> FileOp; //If you rename this FileOperation, __uuidof(FileOperation) will grab yours and not the struct from Windows causing a failure
             const auto CreateFileOperationResult = CoCreateInstance(__uuidof(FileOperation), nullptr, CLSCTX_ALL, IID_PPV_ARGS(&FileOp));
@@ -48,7 +48,7 @@ namespace FileTransporter
             return true;
         }
 
-        bool CopyItems(const ATL::CComPtr<IShellItemArray>& SelectedElements, const CComPtr<IShellItem>& Directory)
+        [[nodiscard]] bool CopyItems(const ATL::CComPtr<IShellItemArray>& SelectedElements, const CComPtr<IShellItem>& Directory)
         {
             CComPtr<IFileOperation> FileOp; //If you rename this FileOperation, __uuidof(FileOperation) will grab yours and not the struct from Windows causing a failure
             const auto CreateFileOperationResult = CoCreateInstance(__uuidof(FileOperation), nullptr, CLSCTX_ALL, IID_PPV_ARGS(&FileOp));
@@ -69,7 +69,7 @@ namespace FileTransporter
             return true;
         }
 
-        CComPtr<IShellItem> GetChoiceDirectory()
+        [[nodiscard]] CComPtr<IShellItem> GetChoiceDirectory()
         {
             CComPtr<IFileOpenDialog> FileDialog = nullptr;
             const auto CreateInstanceResult = CoCreateInstance(__uuidof(FileOpenDialog), nullptr, CLSCTX_ALL, IID_PPV_ARGS(&FileDialog));
@@ -104,7 +104,7 @@ namespace FileTransporter
             return ShellItem;
         }
 
-        bool Contains(const ATL::CComPtr<IShellItemArray>& SelectedElements, const std::filesystem::path& Path)
+        [[nodiscard]] bool Contains(const ATL::CComPtr<IShellItemArray>& SelectedElements, const std::filesystem::path& Path)
         {
             DWORD Count{};
             const auto GetCountResult = SelectedElements->GetCount(&Count);

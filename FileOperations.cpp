@@ -7,7 +7,7 @@ namespace FileTransporter
 {
     namespace FileOperations
     {
-        nlohmann::json LoadJsonFromDisk(const std::filesystem::path& path)
+        [[nodiscard]] nlohmann::json LoadJsonFromDisk(const std::filesystem::path& path)
         {
             if (!std::filesystem::exists(path.parent_path()))
             {
@@ -35,7 +35,7 @@ namespace FileTransporter
             return json;
         }
 
-        bool SaveJsonToDisk(const std::filesystem::path& path, const nlohmann::json& json)
+        [[nodiscard]] bool SaveJsonToDisk(const std::filesystem::path& path, const nlohmann::json& json)
         {
             if (!std::filesystem::exists(path.parent_path()))
             {
@@ -59,22 +59,38 @@ namespace FileTransporter
 
         void SavePinnedFolderToJson(const std::filesystem::path& SelectedElement, const std::filesystem::path& JsonFile)
         {
+            std::vector<std::string> PinnedFolders{};
             auto Json = LoadJsonFromDisk(JsonFile);
-            std::vector<std::string> PinnedFolders = Json["PinnedFolders"].get<std::vector<std::string>>();
+            if (!Json.is_null())
+            {
+                PinnedFolders = Json.value("PinnedFolders", std::vector<std::string>{});
+            }
             PinnedFolders.push_back(SelectedElement.generic_string());
             Json["PinnedFolders"] = PinnedFolders;
-            SaveJsonToDisk(JsonFile, Json);
+            const auto Saved = SaveJsonToDisk(JsonFile, Json);
+            if (!Saved)
+            {
+                //TODO: Add good logging.
+            }
         }
 
         void RemovePinnedFolderFromJson(const std::filesystem::path& SelectedElement, const std::filesystem::path& JsonFile)
         {
+            std::vector<std::string> PinnedFolders{};
             auto Json = LoadJsonFromDisk(JsonFile);
-            std::vector<std::string> PinnedFolders = Json["PinnedFolders"].get<std::vector<std::string>>();
+            if (!Json.is_null())
+            {
+                PinnedFolders = Json.value("PinnedFolders", std::vector<std::string>{});
+            }
             PinnedFolders.push_back(SelectedElement.generic_string());
             auto ToRemove = std::remove_if(PinnedFolders.begin(), PinnedFolders.end(), [&](const std::string& Entry) { return std::filesystem::path(Entry) == std::filesystem::path(SelectedElement); });
             PinnedFolders.erase(ToRemove, PinnedFolders.end());
             Json["PinnedFolders"] = PinnedFolders;
-            SaveJsonToDisk(JsonFile, Json);
+            const auto Saved = SaveJsonToDisk(JsonFile, Json);
+            if (!Saved)
+            {
+                //TODO: Add good logging.
+            }
         }
     }
 }

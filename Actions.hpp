@@ -11,18 +11,12 @@ namespace FileTransporter
 {
     namespace Actions
     {
-        bool MoveToParentDirectory(const ATL::CComPtr<IShellItemArray>& SelectedElements, const std::shared_ptr<MenuItemBase>& CurrentItem);
-
-        bool MoveToPinnedFolder(const ATL::CComPtr<IShellItemArray>& SelectedElements, const std::shared_ptr<MenuItemBase>& CurrentItem);
-
-        bool MoveToRelativeFolder(const ATL::CComPtr<IShellItemArray>& SelectedElements, const std::shared_ptr<MenuItemBase>& CurrentItem);
-
-        bool MoveToChoiceDirectory(const ATL::CComPtr<IShellItemArray>& SelectedElements, const std::shared_ptr<MenuItemBase>& CurrentItem);
-
-        bool BackupSelectedElements(const ATL::CComPtr<IShellItemArray>& SelectedElements, const std::shared_ptr<MenuItemBase>& CurrentItem);
-
-        bool PinSelectedDirectory(const ATL::CComPtr<IShellItemArray>& SelectedElements, const std::shared_ptr<MenuItemBase>& CurrentItem);
-
-        bool UnpinSelectedDirectory(const ATL::CComPtr<IShellItemArray>& SelectedElements, const std::shared_ptr<MenuItemBase>& CurrentItem);
+        [[nodiscard]] bool MoveToParentDirectory(const ATL::CComPtr<IShellItemArray>& SelectedElements, const std::shared_ptr<MenuItemBase>& CurrentItem);
+        [[nodiscard]] bool MoveToPinnedFolder(const ATL::CComPtr<IShellItemArray>& SelectedElements, const std::shared_ptr<MenuItemBase>& CurrentItem);
+        [[nodiscard]] bool MoveToRelativeFolder(const ATL::CComPtr<IShellItemArray>& SelectedElements, const std::shared_ptr<MenuItemBase>& CurrentItem);
+        [[nodiscard]] bool MoveToChoiceDirectory(const ATL::CComPtr<IShellItemArray>& SelectedElements, const std::shared_ptr<MenuItemBase>& CurrentItem);
+        [[nodiscard]] bool BackupSelectedElements(const ATL::CComPtr<IShellItemArray>& SelectedElements, const std::shared_ptr<MenuItemBase>& CurrentItem);
+        [[nodiscard]] bool PinSelectedDirectory(const ATL::CComPtr<IShellItemArray>& SelectedElements, const std::shared_ptr<MenuItemBase>& CurrentItem);
+        [[nodiscard]] bool UnpinSelectedDirectory(const ATL::CComPtr<IShellItemArray>& SelectedElements, const std::shared_ptr<MenuItemBase>& CurrentItem);
     }
 }

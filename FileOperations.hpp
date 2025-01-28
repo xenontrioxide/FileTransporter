@@ -10,8 +10,8 @@ namespace FileTransporter
 {
     namespace FileOperations
     {
-        nlohmann::json LoadJsonFromDisk(const std::filesystem::path& path);
-        bool SaveJsonToDisk(const std::filesystem::path& path, const nlohmann::json& json);
+        [[nodiscard]] nlohmann::json LoadJsonFromDisk(const std::filesystem::path& path);
+        [[nodiscard]] bool SaveJsonToDisk(const std::filesystem::path& path, const nlohmann::json& json);
         void SavePinnedFolderToJson(const std::filesystem::path& SelectedElement, const std::filesystem::path& JsonFile);
         void RemovePinnedFolderFromJson(const std::filesystem::path& SelectedElement, const std::filesystem::path& JsonFile);
     }
