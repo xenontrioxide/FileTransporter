@@ -165,7 +165,7 @@ namespace FileTransporter
             if (!std::filesystem::exists(SelectedFolder))
                 return false;
 
-            FileTransporter::FileOperations::SavePinnedFolderToJson(SelectedFolder, Shared::JsonFilePath);
+            FileTransporter::FileOperations::SavePinnedFolderToJson(SelectedFolder, Shared::GetJsonFilePath());
             return true;
         }
 
@@ -188,7 +188,7 @@ namespace FileTransporter
             if (!std::filesystem::exists(SelectedFolder))
                 return false;
 
-            FileTransporter::FileOperations::RemovePinnedFolderFromJson(SelectedFolder, Shared::JsonFilePath);
+            FileTransporter::FileOperations::RemovePinnedFolderFromJson(SelectedFolder, Shared::GetJsonFilePath());
             return true;
         }
     }

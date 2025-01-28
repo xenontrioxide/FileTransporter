@@ -2,6 +2,8 @@
 #include <stdint.h>
 #include <Windows.h>
 #include <string>
+#include <filesystem>
+#include <ShlObj.h>
 
 namespace Shared
 {
@@ -12,7 +14,7 @@ namespace Shared
     inline constexpr auto FriendlyClassName = L"ContextMenuHandler.FriendlyName Class";
     inline constexpr auto FriendlyMenuName = L"ContextMenuHandler.FriendlyName";
     inline constexpr auto ThreadingModel = L"Apartment";
-    inline constexpr auto JsonFilePath = L"C:/Users/PC/AppData/Local/FileTransporter/FileTransporter.json";
+    inline constexpr auto JsonFileName = "FileTransporter.json";
 
     inline std::wstring GetModulename()
     {
@@ -23,5 +25,14 @@ namespace Shared
         }
 
         return moduleName;
+    }
+
+    inline std::filesystem::path GetJsonFilePath()
+    {
+        std::wstring AppdataFolderPath(32767, 0);
+        if (SUCCEEDED(SHGetFolderPathW(nullptr, CSIDL_COMMON_APPDATA, nullptr, 0, AppdataFolderPath.data())))
+            return std::filesystem::path(AppdataFolderPath) / "FileTransporter" / "test.json";
+
+        return std::filesystem::path("");
     }
 }

@@ -159,16 +159,16 @@ void ContextMenuHandler::CreateMenus()
     }
 
     //If the config folder doesn't exist, create the folder and the json inside of it with empty data.
-    const auto ConfigSaveFolder = std::filesystem::path(Shared::JsonFilePath).parent_path();
+    const auto ConfigSaveFolder = std::filesystem::path(Shared::GetJsonFilePath()).parent_path();
     if (!std::filesystem::exists(ConfigSaveFolder))
     {
         std::filesystem::create_directory(ConfigSaveFolder);
         nlohmann::json Json;
         Json["PinnedFolders"] = std::vector<std::string>();
-        FileTransporter::FileOperations::SaveJsonToDisk(Shared::JsonFilePath, Json);
+        FileTransporter::FileOperations::SaveJsonToDisk(Shared::GetJsonFilePath(), Json);
     }
 
-    const auto Json = FileTransporter::FileOperations::LoadJsonFromDisk(Shared::JsonFilePath);
+    const auto Json = FileTransporter::FileOperations::LoadJsonFromDisk(Shared::GetJsonFilePath());
     std::vector<std::string> PinnedFolders = Json["PinnedFolders"].get<std::vector<std::string>>();
     for (const auto& Pin : PinnedFolders)
     {
@@ -180,7 +180,7 @@ void ContextMenuHandler::CreateMenus()
 
     if (Count == 1) // If we have just one item selected
     {
-        const auto Json = FileTransporter::FileOperations::LoadJsonFromDisk(Shared::JsonFilePath);
+        const auto Json = FileTransporter::FileOperations::LoadJsonFromDisk(Shared::GetJsonFilePath());
         std::vector<std::string> PinnedFolders = Json["PinnedFolders"].get<std::vector<std::string>>();
 
         //We only want folders for the pinning / unpinning
