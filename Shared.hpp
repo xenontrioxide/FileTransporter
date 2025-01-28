@@ -31,7 +31,7 @@ namespace Shared
     {
         std::wstring AppdataFolderPath(32767, 0);
         if (SUCCEEDED(SHGetFolderPathW(nullptr, CSIDL_COMMON_APPDATA, nullptr, 0, AppdataFolderPath.data())))
-            return std::filesystem::path(AppdataFolderPath) / "FileTransporter" / "test.json";
+            return std::filesystem::path(AppdataFolderPath) / "FileTransporter" / JsonFileName;
 
         return std::filesystem::path("");
     }
