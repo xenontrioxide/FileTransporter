@@ -139,9 +139,11 @@ void ContextMenuHandler::CreateMenus()
     if (!SUCCEEDED(GetItemResult))
         return;
 
-    const auto SelectedElement = FileTransporter::ComUtils::GetShellItemPath(FirstSelectedItem);
-
     Head = std::make_shared<FileTransporter::SubMenuItem>(L"FileTransporter");
+    const auto SelectedElement = FileTransporter::ComUtils::GetShellItemPath(FirstSelectedItem);
+    if (SelectedElement.root_path() == SelectedElement)
+        return;
+
     const auto Backup = std::make_shared<FileTransporter::MenuItem>(L"Backup", FileTransporter::Actions::BackupSelectedElements);
     const auto MoveTo = std::make_shared<FileTransporter::SubMenuItem>(L"Move To");
     Head->AddChild(Backup);
@@ -207,7 +209,14 @@ void ContextMenuHandler::CreateMenus()
     //We can't send a folder inside of itself so we want to only add the ones that aren't selected
     {
         const auto FolderPath = FileTransporter::ComUtils::GetShellItemPath(FirstSelectedItem).parent_path();
-        for (auto const& File : std::filesystem::directory_iterator(FolderPath))
+        std::error_code ErrorCode{};
+        auto FileIterator = std::filesystem::directory_iterator(FolderPath, ErrorCode);
+        if (ErrorCode)
+        {
+            return;
+        }
+
+        for (auto const& File : FileIterator)
         {
             if (std::filesystem::is_directory(File) && !FileTransporter::ComUtils::Contains(SelectedShellItems, File.path().generic_wstring()))
             {
@@ -224,7 +233,7 @@ void ContextMenuHandler::InsertSubMenu(HMENU hMenu, const std::shared_ptr<FileTr
     const auto MenuTitle = item->GetMenuItemText();
 
     // Insert this menu
-    MENUITEMINFO mii = { sizeof(MENUITEMINFO) };
+    MENUITEMINFOW mii = { sizeof(MENUITEMINFOW) };
     mii.fMask = item->GetMask();
     mii.fType = item->GetType();
     mii.wID = uID;

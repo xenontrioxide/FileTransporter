@@ -22,9 +22,15 @@ To unregister the FileTransporter.dll in case you want to remove it.
 A success message should be printed in a message box.
 
 # Building
-1. Open the FileTransporter.sln
-2. Build the Project. "Ctrl + B" for default Visual Studio
-3. Output is located at `ProjectDir/{Architecture}/{Configuration}/FileTransporter.dll` Example: `C:/FileTransporter/x64/Debug/FileTransporter.dll`
+- This project uses [CMake](https://cmake.org/) for the build system.
+- This project uses [vcpkg](https://vcpkg.io/) to manage dependencies.
+### [CMake GUI](https://cmake.org/download/)
+1. Select this project root as the source directory.
+2. Choose and select the build directory.
+3. Generate & Open Project.
+### CMake Commandline
+1. At the root of the project `cmake -S . -B <BuildDir>`
+2. Run `cmake --build <BuildDir>`
 
 # Image(s)
 ![alt text](https://github.com/xenontrioxide/FileTransporter/blob/master/images/explorer_ldWLs31FaP.png)

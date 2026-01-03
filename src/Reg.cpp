@@ -51,7 +51,7 @@ HRESULT SetHKCRRegistryKeyAndValue(PCWSTR pszSubKey, PCWSTR pszValueName,
 
     // Creates the specified registry key. If the key already exists, the 
     // function opens it. 
-    hr = HRESULT_FROM_WIN32(RegCreateKeyEx(HKEY_CLASSES_ROOT, pszSubKey, 0,
+    hr = HRESULT_FROM_WIN32(RegCreateKeyExW(HKEY_CLASSES_ROOT, pszSubKey, 0,
         NULL, REG_OPTION_NON_VOLATILE, KEY_WRITE, NULL, &hKey, NULL));
 
     if (SUCCEEDED(hr))
@@ -59,8 +59,8 @@ HRESULT SetHKCRRegistryKeyAndValue(PCWSTR pszSubKey, PCWSTR pszValueName,
         if (pszData != NULL)
         {
             // Set the specified value of the key.
-            DWORD cbData = lstrlen(pszData) * sizeof(*pszData);
-            hr = HRESULT_FROM_WIN32(RegSetValueEx(hKey, pszValueName, 0,
+            DWORD cbData = lstrlenW(pszData) * sizeof(*pszData);
+            hr = HRESULT_FROM_WIN32(RegSetValueExW(hKey, pszValueName, 0,
                 REG_SZ, reinterpret_cast<const BYTE*>(pszData), cbData));
         }
 
@@ -98,13 +98,13 @@ HRESULT GetHKCRRegistryKeyAndValue(PCWSTR pszSubKey, PCWSTR pszValueName,
     HKEY hKey = NULL;
 
     // Try to open the specified registry key. 
-    hr = HRESULT_FROM_WIN32(RegOpenKeyEx(HKEY_CLASSES_ROOT, pszSubKey, 0,
+    hr = HRESULT_FROM_WIN32(RegOpenKeyExW(HKEY_CLASSES_ROOT, pszSubKey, 0,
         KEY_READ, &hKey));
 
     if (SUCCEEDED(hr))
     {
         // Get the data for the specified value name.
-        hr = HRESULT_FROM_WIN32(RegQueryValueEx(hKey, pszValueName, NULL,
+        hr = HRESULT_FROM_WIN32(RegQueryValueExW(hKey, pszValueName, NULL,
             NULL, reinterpret_cast<LPBYTE>(pszData), &cbData));
 
         RegCloseKey(hKey);
@@ -159,7 +159,7 @@ HRESULT RegisterInprocServer(PCWSTR pszModule, const CLSID& clsid,
     wchar_t szSubkey[MAX_PATH];
 
     // Create the HKCR\CLSID\{<CLSID>} key.
-    hr = StringCchPrintf(szSubkey, ARRAYSIZE(szSubkey), L"CLSID\\%s", szCLSID);
+    hr = StringCchPrintfW(szSubkey, ARRAYSIZE(szSubkey), L"CLSID\\%s", szCLSID);
     if (SUCCEEDED(hr))
     {
         hr = SetHKCRRegistryKeyAndValue(szSubkey, NULL, pszFriendlyName);
@@ -167,7 +167,7 @@ HRESULT RegisterInprocServer(PCWSTR pszModule, const CLSID& clsid,
         // Create the HKCR\CLSID\{<CLSID>}\InprocServer32 key.
         if (SUCCEEDED(hr))
         {
-            hr = StringCchPrintf(szSubkey, ARRAYSIZE(szSubkey),
+            hr = StringCchPrintfW(szSubkey, ARRAYSIZE(szSubkey),
                 L"CLSID\\%s\\InprocServer32", szCLSID);
             if (SUCCEEDED(hr))
             {
@@ -208,10 +208,10 @@ HRESULT UnregisterInprocServer(const CLSID& clsid)
     wchar_t szSubkey[MAX_PATH];
 
     // Delete the HKCR\CLSID\{<CLSID>} key.
-    hr = StringCchPrintf(szSubkey, ARRAYSIZE(szSubkey), L"CLSID\\%s", szCLSID);
+    hr = StringCchPrintfW(szSubkey, ARRAYSIZE(szSubkey), L"CLSID\\%s", szCLSID);
     if (SUCCEEDED(hr))
     {
-        hr = HRESULT_FROM_WIN32(RegDeleteTree(HKEY_CLASSES_ROOT, szSubkey));
+        hr = HRESULT_FROM_WIN32(RegDeleteTreeW(HKEY_CLASSES_ROOT, szSubkey));
     }
 
     return hr;
@@ -279,7 +279,7 @@ HRESULT RegisterShellExtContextMenuHandler(
     }
 
     // Create the key HKCR\<File Type>\shellex\ContextMenuHandlers\{<CLSID>}
-    hr = StringCchPrintf(szSubkey, ARRAYSIZE(szSubkey),
+    hr = StringCchPrintfW(szSubkey, ARRAYSIZE(szSubkey),
         L"%s\\shellex\\ContextMenuHandlers\\%s", pszFileType, szCLSID);
     if (SUCCEEDED(hr))
     {
@@ -338,11 +338,11 @@ HRESULT UnregisterShellExtContextMenuHandler(
     }
 
     // Remove the HKCR\<File Type>\shellex\ContextMenuHandlers\{<CLSID>} key.
-    hr = StringCchPrintf(szSubkey, ARRAYSIZE(szSubkey),
+    hr = StringCchPrintfW(szSubkey, ARRAYSIZE(szSubkey),
         L"%s\\shellex\\ContextMenuHandlers\\%s", pszFileType, szCLSID);
     if (SUCCEEDED(hr))
     {
-        hr = HRESULT_FROM_WIN32(RegDeleteTree(HKEY_CLASSES_ROOT, szSubkey));
+        hr = HRESULT_FROM_WIN32(RegDeleteTreeW(HKEY_CLASSES_ROOT, szSubkey));
     }
 
     return hr;
